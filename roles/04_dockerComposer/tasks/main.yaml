@@ -1,0 +1,10 @@
+---
+
+- name: Installing pip
+  yum:
+    name: ['python2-pip', 'python-setuptools']
+    state: latest
+
+- name: Installing docker-compose
+  pip:
+    name: docker-compose

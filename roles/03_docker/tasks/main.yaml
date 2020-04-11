@@ -1,0 +1,46 @@
+---
+
+- name: Install pre-req packages
+  yum:
+    name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2']
+    state: latest
+
+- name: Transferring docker-ce.repo
+  copy:
+    src: docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install Docker CE
+  yum:
+    name: ['docker-ce-18.06.2.ce', 'containerd.io']
+    state: latest
+
+- name: Create etc docker dir
+  file:
+    path: /etc/docker
+    state: directory
+    mode: 0755
+
+- name: Copy docker config
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create systemd dir
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: 0755
+
+- name: Startup docker
+  systemd: 
+    name: docker
+    state: started
+    enabled: yes
+    daemon_reload: yes

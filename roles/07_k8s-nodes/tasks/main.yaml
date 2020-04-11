@@ -1,0 +1,41 @@
+---
+
+- name: Configuring firewall [1/4]
+  firewalld:
+    port: 10250/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [2/4]
+  firewalld:
+    port: 10255/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [3/4]
+  firewalld:
+    port: 30000-32767/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [4/4]
+  firewalld:
+    port: 6783/tcp
+    state: enabled
+    permanent: yes
+    immediate: yes
+
+- name: Restarting firewalld
+  systemd:
+    name: firewalld
+    state: restarted
+
+- name: Checking if k8s is setup
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: k8ssetup
+
+- name: Joining k8s cluster
+  shell: |
+    {{ hostvars['k8s-master'].k8stoken }}
+  when: k8ssetup.stat.exists == False

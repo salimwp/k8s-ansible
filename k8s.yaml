@@ -1,0 +1,28 @@
+---
+
+- name: Provisioning k8s servers
+  hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: yes
+  roles:
+    - 01_orchestration
+    - 02_common
+    - 03_docker
+    - 05_k8s
+
+- name: Configuring k8s-master
+  hosts: k8s-masters
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  roles:
+    - 06_k8s-master
+
+- name: Configuring k8s-nodes
+  hosts: k8s-nodes
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  roles:
+    - 07_k8s-nodes

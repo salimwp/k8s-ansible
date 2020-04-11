@@ -1,0 +1,67 @@
+---
+
+- name: Transferring k8s repo
+  copy:
+    src: kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Install k8s packages
+  yum:
+    name: ['kubelet', 'kubeadm', 'kubectl']
+    state: latest
+    disable_excludes: kubernetes
+
+- name: Add br_netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Enabling net.bridge.bridge-nf-call-ip6tables
+  sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Enabling net.bridge.bridge-nf-call-iptables
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Enabling firewall ports
+  firewalld:
+    port: '6443/tcp'
+    permanent: yes
+    state: enabled
+
+- name: Enabling firewall ports
+  firewalld:
+    port: '10250/tcp'
+    permanent: yes
+    state: enabled
+
+- name: Disabling swap
+  shell: |
+    swapoff -a
+
+- name: Removing swap from fstab
+  lineinfile:
+    path: /etc/fstab
+    state: absent
+    regexp: '^/dev/mapper/centos-swap*'
+
+
+- name: Starting k8s
+  systemd:
+    name: kubelet
+    state: started
+    enabled: yes

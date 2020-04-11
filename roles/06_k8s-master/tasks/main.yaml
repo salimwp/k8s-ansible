@@ -1,0 +1,78 @@
+---
+
+- name: Configuring firewall [1/6]
+  firewalld:
+    port: 6443/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [2/6]
+  firewalld:
+    port: 2379-2380/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [3/6]
+  firewalld:
+    port: 10250/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [4/6]
+  firewalld:
+    port: 10251/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [5/6]
+  firewalld:
+    port: 10252/tcp
+    state: enabled
+    permanent: yes
+
+- name: Configuring firewall [6/6]
+  firewalld:
+    port: 10255/tcp
+    state: enabled
+    permanent: yes
+    immediate: yes
+
+- name: Restarting firewalld
+  systemd:
+    name: firewalld
+    state: restarted
+
+- name: Checking to see if k8s has been initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: st
+
+- name: Initializing Kubernetes
+  shell: |
+    kubeadm init
+  when: st.stat.exists == False
+
+- name: Creating k8s config env
+  shell: |
+    mkdir -p $HOME/.kube
+    cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+  when: st.stat.exists == False
+
+
+- name: Adding Weave Net pod network add-on
+  shell: |
+    kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  when: st.stat.exists == False
+
+- name: Getting last token
+  shell: | 
+    kubeadm token create --print-join-command
+  register: token
+
+- name: Registering token to facts
+  set_fact:
+    k8stoken: "{{ token.stdout }}"
+
+- debug:
+    msg: "{{ k8stoken }}"
