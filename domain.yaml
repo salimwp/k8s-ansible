@@ -1,0 +1,10 @@
+---
+
+- name: Configuring k8s-master dns
+  hosts: ['k8s-masters' ,'k8s-nodes']
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  roles:
+    - 08_domain_integration
+  
