@@ -1,3 +1,5 @@
+NOTE: I have moved away from using the ansible solution to a cloud-init method. Please refer to https://github.com/salimwp/k8s-bootstrap
+
 This ansible playbook is created to spin up a small Kubernetes cluster. Rather than using minikube we can use this to practice staging or near production deployments and fine tuning of clustered solutions.
 
 Note: this installation is just a basic installation designed to get familar with k8s and plan workflows. Security hardening of the base CentOS servers and k8s is left for your organization, as organizations' security requirements differ. However, feel free to message me and I will try to guide you through.
